@@ -1,0 +1,7 @@
+function handleLogout() {
+    // 1. Menghapus data login warga dari memori browser
+    localStorage.removeItem('user_session'); 
+    
+    // 2. Langsung melempar kembali ke gerbang login
+    window.location.href = "auth.html"; 
+}

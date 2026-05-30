@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mengalihkan...</title>
+    <script>
+        // Cek status login dari localStorage browser
+        const userSession = localStorage.getItem('user_session');
+        
+        if (userSession) {
+            // Jika sudah login, langsung lempar ke beranda
+            window.location.href = "pages/beranda.html";
+        } else {
+            // Jika belum login, paksa ke halaman login/register
+            window.location.href = "pages/auth.html";
+        }
+    </script>
+</head>
+<body class="bg-amber-50">
+</body>
+</html>
