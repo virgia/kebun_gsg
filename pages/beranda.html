@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GSG 07 — Lahan Produktif Warga</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght=700;900&family=Plus+Jakarta+Sans:wght=400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -73,7 +73,7 @@
     }
     .stat-item:last-child { border-right: none; }
     .stat-number {
-      font-size: 1.45rem; font-weight: 800; line-height: 1;
+      font-size: 1.45rem; font-weight: 500; line-height: 1;
       color: #ffffff;
       text-shadow: 0 1px 8px rgba(76,175,80,0.5);
     }
@@ -86,16 +86,77 @@
     .section-title { font-size: 0.85rem; font-weight: 700; color: var(--green-dark); letter-spacing: -0.01em; }
     .section-link  { font-size: 0.72rem; font-weight: 600; color: var(--green-mid); }
 
-    /* ── Kategori Pill ── */
+    /* ── PERBAIKAN: Kategori Pill Menggunakan Basis Warna Hijau Gelap Seragam ── */
     .kategori-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px 3px 7px; border-radius: 20px;
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.01em;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px 4px 10px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border: 1px solid rgba(168, 213, 162, 0.25);
     }
-    .kategori-pill.sayuran { background: var(--green-pale); color: var(--green-mid); border: 1px solid rgba(76,175,80,0.30); }
-    .kategori-pill.buah    { background: #fff7ed; color: #b45309; border: 1px solid rgba(251,146,60,0.30); }
-    .kategori-pill.umbi    { background: #fdf4e7; color: #92400e; border: 1px solid rgba(180,130,60,0.28); }
-    .kategori-pill svg { width: 12px; height: 12px; }
+    .kategori-pill svg { width: 13px; height: 13px; color: var(--green-light); }
+
+    /* ── PERBAIKAN: Dropdown Accordion Disesuaikan Menjadi Hijau Gelap Premium ── */
+    .dropdown-section {
+      background: linear-gradient(135deg, #1a3a1a 0%, #244f24 100%);
+      border: 1px solid rgba(76,175,80,0.35);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(26,58,26,0.18);
+      transition: box-shadow 0.25s ease;
+    }
+    .dropdown-section.open {
+      box-shadow: 0 6px 24px rgba(26,58,26,0.30);
+      border-color: rgba(168,213,162,0.50);
+    }
+
+    .dropdown-trigger {
+      width: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.9rem 1.1rem;
+      cursor: pointer;
+      background: none; border: none;
+      user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    .dropdown-trigger:active { background: rgba(255,255,255,0.05); }
+
+    .dropdown-left  { display: flex; align-items: center; gap: 0.75rem; }
+    
+    /* Counter Jumlah Tanaman Versi Gelap */
+    .dropdown-count {
+      font-size: 10px; font-weight: 700;
+      color: #d1fae5;
+      background: rgba(76,175,80,0.35);
+      border: 1px solid rgba(168,213,162,0.25);
+      border-radius: 20px; padding: 2px 8px;
+    }
+
+    .dropdown-chevron {
+      width: 16px; height: 16px;
+      color: rgba(168,213,162,0.70);
+      transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+      flex-shrink: 0;
+    }
+    .dropdown-section.open .dropdown-chevron { transform: rotate(180deg); color: #ffffff; }
+
+    /* Smooth height animation */
+    .dropdown-body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .dropdown-body.open { grid-template-rows: 1fr; }
+    .dropdown-body-inner {
+      overflow: hidden;
+    }
+    .dropdown-body-content {
+      display: flex; flex-direction: column; gap: 0.6rem;
+      padding: 0 0.85rem 0.85rem;
+      border-top: 1px solid rgba(168,213,162,0.15);
+      padding-top: 0.85rem;
+      background: rgba(10, 25, 10, 0.4); /* Efek kedalaman area kontainer dalam */
+    }
 
     /* ── Panen Cards ── */
     .harvest-box-card {
@@ -136,57 +197,59 @@
       color: #d1fae5;
     }
 
-    /* ── Kebun Cards ── */
+    /* ── Kebun Cards Gelap Premium ── */
     .veg-card {
       border-radius: 13px;
-      border: 1px solid rgba(76,175,80,0.20);
-      padding: 0.8rem 0.95rem;
+      padding: 0.85rem 0.95rem;
       display: flex; gap: 0.85rem; align-items: center;
       transition: transform 0.18s ease;
       position: relative; overflow: hidden;
     }
     .veg-card.status-bibit {
-      background: linear-gradient(135deg, var(--green-pale) 0%, #dff0da 100%);
-      box-shadow: 0 2px 10px rgba(45,106,45,0.08);
+      background: linear-gradient(150deg, #2a5c2a 0%, #1a3a1a 100%);
+      border: 1px solid rgba(168,213,162,0.20);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
     }
     .veg-card.status-pertumbuhan {
-      background: linear-gradient(135deg, #d4edcf 0%, #b8e0b2 100%);
-      box-shadow: 0 2px 10px rgba(45,106,45,0.14);
+      background: linear-gradient(150deg, var(--green-mid) 0%, #1e441e 100%);
+      border: 1px solid rgba(168,213,162,0.30);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.20);
     }
     .veg-card::before {
       content: '';
       position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
       border-radius: 13px 0 0 13px;
     }
-    .veg-card.status-bibit::before     { background: linear-gradient(to bottom, var(--green-light), var(--green-bright)); }
-    .veg-card.status-pertumbuhan::before { background: linear-gradient(to bottom, var(--green-mid), var(--green-dark)); }
+    .veg-card.status-bibit::before     { background: linear-gradient(to bottom, #72ba72, var(--green-light)); }
+    .veg-card.status-pertumbuhan::before { background: linear-gradient(to bottom, var(--green-bright), #ffffff); }
     .veg-card:active { transform: scale(0.98); }
 
     .veg-icon {
-      width: 38px; height: 38px; border-radius: 10px;
+      width: 36px; height: 36px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.15rem; flex-shrink: 0;
+      font-size: 0.95rem; flex-shrink: 0;
     }
-    .veg-icon.bibit       { background: rgba(76,175,80,0.15); }
-    .veg-icon.pertumbuhan { background: rgba(45,106,45,0.18); }
+    .veg-icon.bibit       { background: rgba(168,213,162,0.12); border: 1px solid rgba(168,213,162,0.20); }
+    .veg-icon.pertumbuhan { background: rgba(168,213,162,0.20); border: 1px solid rgba(168,213,162,0.30); }
 
-    .veg-nama     { font-size: 0.85rem; font-weight: 700; color: var(--green-dark); }
-    .veg-meta     { font-size: 0.67rem; font-weight: 500; color: #5a8a5a; margin-top: 1px; }
+    .veg-nama     { font-size: 0.85rem; font-weight: 700; color: #ffffff; }
+    .veg-meta     { font-size: 0.67rem; font-weight: 500; color: rgba(168,213,162,0.75); margin-top: 2px; }
 
-    /* Status Badges */
+    /* Badge Status */
     .badge-bibit {
-      font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 20px; white-space: nowrap;
-      background: rgba(168,213,162,0.35);
-      color: var(--green-mid);
-      border: 1px solid rgba(76,175,80,0.35);
+      font-size: 8.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      padding: 2.5px 7.5px; border-radius: 20px; white-space: nowrap;
+      background: rgba(168,213,162,0.15);
+      color: #a8d5a2;
+      border: 1px solid rgba(168,213,162,0.30);
     }
     .badge-pertumbuhan {
-      font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 20px; white-space: nowrap;
-      background: var(--green-mid);
+      font-size: 8.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      padding: 2.5px 7.5px; border-radius: 20px; white-space: nowrap;
+      background: var(--green-bright);
       color: #ffffff;
-      border: 1px solid var(--green-mid);
+      border: 1px solid var(--green-bright);
+      box-shadow: 0 1px 6px rgba(76,175,80,0.4);
     }
 
     /* ── Banner Info ── */
@@ -276,55 +339,73 @@
     </div>
   </div>
 
-  <!-- Kategori Sayuran -->
-  <div class="p-5 pt-2">
-    <div class="flex items-center justify-between mb-3">
-      <div class="flex items-center gap-2">
-        <h2 class="section-title">Sayuran</h2>
-        <span class="kategori-pill sayuran">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6 2 2 8 2 12c0 2 1 4 3 5"/><path d="M12 2c6 0 10 6 10 10 0 2-1 4-3 5"/><path d="M12 22V10"/><path d="M8 14l4-4 4 4"/></svg>
-          Sayuran
-        </span>
-      </div>
-      <a href="kebun.html" class="section-link">Semua →</a>
-    </div>
-    <div id="container-sayuran" class="flex flex-col gap-2.5">
-      <p class="text-xs text-gray-400 italic py-2 text-center">Memuat...</p>
-    </div>
-  </div>
+  <!-- Kategori Tanaman (Accordion Gelap Berwibawa) -->
+  <div class="p-5 pt-2 flex flex-col gap-3">
+    <h2 class="section-title mb-1">Sedang Ditanam</h2>
 
-  <!-- Kategori Buah -->
-  <div class="p-5 pt-2">
-    <div class="flex items-center justify-between mb-3">
-      <div class="flex items-center gap-2">
-        <h2 class="section-title">Buah</h2>
-        <span class="kategori-pill buah">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7"/><path d="M12 7V3"/><path d="M9 4c0 0 1 2 3 2s3-2 3-2"/></svg>
-          Buah
-        </span>
+    <!-- Sayuran -->
+    <div class="dropdown-section" id="section-sayuran">
+      <button class="dropdown-trigger" onclick="toggleDropdown('sayuran')">
+        <div class="dropdown-left">
+          <span class="kategori-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6 2 2 8 2 12c0 2 1 4 3 5"/><path d="M12 2c6 0 10 6 10 10 0 2-1 4-3 5"/><path d="M12 22V10"/><path d="M8 14l4-4 4 4"/></svg>
+            Sayuran
+          </span>
+          <span class="dropdown-count" id="count-sayuran">-</span>
+        </div>
+        <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="dropdown-body" id="body-sayuran">
+        <div class="dropdown-body-inner">
+          <div class="dropdown-body-content" id="container-sayuran">
+            <p class="text-xs text-gray-400 italic py-2 text-center">Memuat...</p>
+          </div>
+        </div>
       </div>
-      <a href="kebun.html" class="section-link">Semua →</a>
     </div>
-    <div id="container-buah" class="flex flex-col gap-2.5">
-      <p class="text-xs text-gray-400 italic py-2 text-center">Memuat...</p>
-    </div>
-  </div>
 
-  <!-- Kategori Umbi-umbian -->
-  <div class="p-5 pt-2">
-    <div class="flex items-center justify-between mb-3">
-      <div class="flex items-center gap-2">
-        <h2 class="section-title">Umbi-umbian</h2>
-        <span class="kategori-pill umbi">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="15" rx="6" ry="5"/><path d="M12 10V5"/><path d="M9 7c0 0 1-3 3-3s3 3 3 3"/></svg>
-          Umbi-umbian
-        </span>
+    <!-- Buah -->
+    <div class="dropdown-section" id="section-buah">
+      <button class="dropdown-trigger" onclick="toggleDropdown('buah')">
+        <div class="dropdown-left">
+          <span class="kategori-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7"/><path d="M12 7V3"/><path d="M9 4c0 0 1 2 3 2s3-2 3-2"/></svg>
+            Buah
+          </span>
+          <span class="dropdown-count" id="count-buah">-</span>
+        </div>
+        <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="dropdown-body" id="body-buah">
+        <div class="dropdown-body-inner">
+          <div class="dropdown-body-content" id="container-buah">
+            <p class="text-xs text-gray-400 italic py-2 text-center">Memuat...</p>
+          </div>
+        </div>
       </div>
-      <a href="kebun.html" class="section-link">Semua →</a>
     </div>
-    <div id="container-umbi" class="flex flex-col gap-2.5">
-      <p class="text-xs text-gray-400 italic py-2 text-center">Memuat...</p>
+
+    <!-- Umbi-umbian -->
+    <div class="dropdown-section" id="section-umbi">
+      <button class="dropdown-trigger" onclick="toggleDropdown('umbi')">
+        <div class="dropdown-left">
+          <span class="kategori-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="15" rx="6" ry="5"/><path d="M12 10V5"/><path d="M9 7c0 0 1-3 3-3s3 3 3 3"/></svg>
+            Umbi-umbian
+          </span>
+          <span class="dropdown-count" id="count-umbi">-</span>
+        </div>
+        <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="dropdown-body" id="body-umbi">
+        <div class="dropdown-body-inner">
+          <div class="dropdown-body-content" id="container-umbi">
+            <p class="text-xs text-gray-400 italic py-2 text-center">Memuat...</p>
+          </div>
+        </div>
+      </div>
     </div>
+
   </div>
 
 </main>
@@ -370,26 +451,40 @@
       return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
   }
 
+  // Toggle dropdown accordion
+  function toggleDropdown(key) {
+      const section = document.getElementById('section-' + key);
+      const body    = document.getElementById('body-' + key);
+      const isOpen  = section.classList.contains('open');
+      if (isOpen) {
+          section.classList.remove('open');
+          body.classList.remove('open');
+      } else {
+          section.classList.add('open');
+          body.classList.add('open');
+      }
+  }
+
   // Render helper untuk card kebun per kategori
-  function renderKebunCards(data, containerId) {
+  function renderKebunCards(data, containerId, countId) {
       const container = document.getElementById(containerId);
+      const countEl   = document.getElementById(countId);
+      if (countEl) countEl.innerText = (data?.length || 0) + ' tanaman';
+
       if (!data || data.length === 0) {
-          container.innerHTML = `<p class="text-xs text-gray-400 italic py-2">Belum ada tanaman di kategori ini.</p>`;
+          container.innerHTML = `<p class="text-xs text-emerald-300/40 italic py-4 text-center">Belum ada tanaman di kategori ini.</p>`;
           return;
       }
       container.innerHTML = data.map(v => {
-          const isBibit      = v.status !== 'Pertumbuhan';
-          const cardClass    = isBibit ? 'status-bibit' : 'status-pertumbuhan';
-          const iconClass    = isBibit ? 'bibit' : 'pertumbuhan';
-          const badgeClass   = isBibit ? 'badge-bibit' : 'badge-pertumbuhan';
-          const badgeLabel   = isBibit ? 'Bibit' : 'Tumbuh';
-
-          // Initial huruf pertama sebagai pengganti ikon
-          const initial = (v.nama_tanaman || '?').charAt(0).toUpperCase();
-
+          const isBibit    = v.status !== 'Pertumbuhan';
+          const cardClass  = isBibit ? 'status-bibit' : 'status-pertumbuhan';
+          const iconClass  = isBibit ? 'bibit' : 'pertumbuhan';
+          const badgeClass = isBibit ? 'badge-bibit' : 'badge-pertumbuhan';
+          const badgeLabel = isBibit ? 'Bibit' : 'Tumbuh';
+          const initial    = (v.nama_tanaman || '?').charAt(0).toUpperCase();
           return `
             <a href="kebun.html" class="veg-card ${cardClass}">
-              <div class="veg-icon ${iconClass}" style="font-family:'Playfair Display',serif; font-weight:700; font-size:1rem; color:var(--green-mid);">${initial}</div>
+              <div class="veg-icon ${iconClass}" style="font-family:'Playfair Display',serif; font-weight:700; color:#d1fae5;">${initial}</div>
               <div class="flex-1 min-w-0">
                 <div class="veg-nama">${v.nama_tanaman}</div>
                 <div class="veg-meta">${v.kategori} · Tanam: ${formatTgl(v.tanggal_tanam)}</div>
@@ -438,26 +533,25 @@
                   `;
               }).join('');
           } else {
-              containerPanen.innerHTML = `<div class="col-span-2"><p class="text-xs text-gray-400 italic py-6 text-center">Belum ada komoditas siap panen yang disiarkan.</p></div>`;
+              containerPanen.innerHTML = `<div class="col-span-2"><p class="text-xs text-emerald-800/50 italic py-6 text-center">Belum ada komoditas siap panen yang disiarkan.</p></div>`;
           }
 
-          // 3. Tiga Kategori Tanaman (paralel)
+          // 3. Tiga Kategori Tanaman
           const KATEGORI = [
-              { key: 'Sayuran',     containerId: 'container-sayuran' },
-              { key: 'Buah',        containerId: 'container-buah' },
-              { key: 'Umbi-umbian', containerId: 'container-umbi' },
+              { key: 'Sayuran',     containerId: 'container-sayuran', countId: 'count-sayuran' },
+              { key: 'Buah',        containerId: 'container-buah',    countId: 'count-buah' },
+              { key: 'Umbi-umbian', containerId: 'container-umbi',    countId: 'count-umbi' },
           ];
 
-          await Promise.all(KATEGORI.map(async ({ key, containerId }) => {
+          await Promise.all(KATEGORI.map(async ({ key, containerId, countId }) => {
               const { data, error } = await supabaseClient
                   .from('kebun')
                   .select('*')
                   .neq('status', 'Siap Panen')
                   .ilike('kategori', key)
-                  .order('id', { ascending: false })
-                  .limit(3);
+                  .order('id', { ascending: false });
               if (error) throw error;
-              renderKebunCards(data, containerId);
+              renderKebunCards(data, containerId, countId);
           }));
 
       } catch (e) {
