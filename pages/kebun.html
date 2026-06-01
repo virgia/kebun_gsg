@@ -67,6 +67,21 @@
       </form>
     </div>
 
+    <div class="relative rounded-md shadow-sm">
+      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+        <svg class="h-4 w-4 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.602 10.602Z" />
+        </svg>
+      </div>
+      <input 
+        type="text" 
+        id="search-tanaman" 
+        class="block w-full rounded-lg border border-emerald-200 bg-white py-2 pl-9 pr-3 text-xs placeholder-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium" 
+        placeholder="Cari tanaman atau kategori (Cabai, Sayuran...)"
+        onkeyup="filterTanaman()"
+      />
+    </div>
+
     <div class="flex items-center justify-between pt-1">
       <h2 class="text-[10px] font-bold text-emerald-900 uppercase tracking-wider">List Tanaman Kebun</h2>
       <button id="btn-toggle-kebun" onclick="toggleKebun()" class="hidden text-[10px] font-semibold text-emerald-700 hover:underline">Semua →</button>
@@ -134,6 +149,40 @@
         return new Date(dateStr).toLocaleDateString('id-ID', opsi);
     }
 
+    // FITUR BARU: Fungsi untuk memfilter kartu tanaman secara real-time
+    function filterTanaman() {
+        const query = document.getElementById('search-tanaman').value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.js-kebun-card');
+        const btnToggle = document.getElementById('btn-toggle-kebun');
+
+        // Jika kolom pencarian tidak kosong, kita abaikan dulu pembatasan pagination "Semua/Sembunyikan"
+        if (query !== "") {
+            btnToggle.classList.add('hidden'); // Sembunyikan tombol "Semua ->" saat mencari
+            cards.forEach(card => {
+                const title = card.querySelector('h3') ? card.querySelector('h3').innerText.toLowerCase() : '';
+                const category = card.querySelector('p') ? card.querySelector('p').innerText.toLowerCase() : '';
+                
+                if (title.includes(query) || category.includes(query)) {
+                    card.classList.remove('card-hidden');
+                } else {
+                    card.classList.add('card-hidden');
+                }
+            });
+        } else {
+            // Jika kolom pencarian kosong kembali, kembalikan ke kondisi pagination normal semula
+            if (cards.length > 3) btnToggle.classList.remove('hidden');
+            
+            cards.forEach((card, index) => {
+                if (index >= 3 && !isKebunOpen) {
+                    card.classList.add('card-hidden');
+                } else {
+                    card.classList.remove('card-hidden');
+                }
+            });
+            btnToggle.innerHTML = isKebunOpen ? "Sembunyikan ↑" : "Semua →";
+        }
+    }
+
     async function fetchKebunData() {
         const { data: listTanaman, error } = await supabaseClient
             .from('kebun')
@@ -183,8 +232,8 @@
               <div class="${hideClass} bg-white rounded-xl border border-gray-200 p-3.5 shadow-sm flex justify-between items-center transition hover:shadow-md">
                 <div>
                   <h3 class="text-sm font-bold text-emerald-950 mb-0.5">${row.nama_tanaman}</h3>
-                  <p class="text-[11px] text-gray-400 font-medium"> Kategori: ${row.kategori}</p>
-                  <p class="text-[11px] text-gray-400 font-medium"> Tgl Tanam: ${formatTglIndo(row.tanggal_tanam)}</p>
+                  <p class="text-[11px] text-gray-400 font-medium">Kategori: ${row.kategori}</p>
+                  <p class="text-[11px] text-gray-400 font-medium">Tgl Tanam: ${formatTglIndo(row.tanggal_tanam)}</p>
                 </div>
                 <div class="flex flex-col items-end gap-2">
                   <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full border ${badgeColor}">
@@ -194,6 +243,9 @@
                 </div>
               </div>`;
         }).join('');
+
+        // PERBAIKAN SINKRONISASI: Jalankan filter kembali setelah me-refresh/load data jika ada teks pencarian tertinggal
+        filterTanaman();
     }
 
     async function handleTambahTanaman(e) {
@@ -215,6 +267,8 @@
         } else {
             document.getElementById('form-tambah').reset();
             document.getElementById('add-tanggal').value = new Date().toISOString().split('T')[0];
+            // Kosongkan pencarian setelah menambah data baru agar data fresh langsung muncul
+            document.getElementById('search-tanaman').value = ""; 
             await fetchKebunData();
         }
 
