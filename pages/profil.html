@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profil Warga - GSG 07</title>
+    <script>
+      (function () {
+        try {
+          if (!localStorage.getItem("user_session"))
+            window.location.replace("auth.html");
+        } catch (e) {
+          window.location.replace("auth.html");
+        }
+      })();
+    </script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --g-dark: #1a3a1a;
+        --g-mid: #2d6a2d;
+        --g-bright: #4caf50;
+        --g-light: #a8d5a2;
+        --cream: #ecebeb;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: var(--cream);
+        color: var(--g-dark);
+        padding-top: 50px;
+        padding-bottom: 90px;
+        min-height: 100vh;
+      }
+
+      /* Topbar */
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 40;
+        background: linear-gradient(135deg, #1a3a1a 0%, #244f24 100%);
+        padding: 0.875rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      }
+      .topbar-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #fff;
+      }
+      .btn-logout {
+        font-size: 0.7rem;
+        font-weight: 700;
+        background: rgba(220, 38, 38, 0.85);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 0;
+        width: 70px;
+        height: 30px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
+      .btn-logout:hover {
+        background: #dc2626;
+      }
+      .btn-logout:active {
+        transform: scale(0.95);
+      }
+
+      /* Avatar Header */
+      .profile-header {
+        background-image:
+          linear-gradient(
+            145deg,
+            rgba(10, 40, 10, 0.92) 0%,
+            rgba(45, 106, 45, 0.8) 60%,
+            rgba(76, 175, 80, 0.55) 100%
+          ),
+          url("../image/banner_profil.jpg");
+        background-size: cover; /* Memaksa gambar menutup seluruh area header tanpa gepeng */
+        background-position: center; /* Memotong dan memfokuskan area tepat di TENGAH gambar */
+        background-repeat: no-repeat; /* Mencegah gambar berulang jika layar terlalu lebar */
+        padding: 2rem 1.25rem 3.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+      }
+      .profile-header::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: linear-gradient(to bottom, transparent, var(--cream));
+        pointer-events: none;
+      }
+      .avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4caf50, #a8d5a2);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        font-family: "Poppins", sans-serif;
+      }
+      .profile-nama {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+      }
+      .profile-username {
+        font-size: 0.75rem;
+        color: rgba(168, 213, 162, 0.8);
+      }
+      .role-pill {
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 3px 12px;
+        border-radius: 20px;
+        background: rgba(76, 175, 80, 0.3);
+        color: #d1fae5;
+        border: 1px solid rgba(168, 213, 162, 0.35);
+      }
+
+      /* Page content */
+      .page {
+        padding: 0 1rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.875rem;
+      }
+
+      /* Section label */
+      .section-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--g-mid);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 2px;
+      }
+
+      /* Info card */
+      .info-card {
+        background: var(--g-mid);
+        border: 1px solid rgba(45, 106, 45, 0.12);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .info-row {
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f3f4f6;
+      }
+      .info-row:last-child {
+        border-bottom: none;
+      }
+      .info-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .info-icon svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .info-icon.green {
+        background: #f0fdf4;
+      }
+      .info-icon.green svg {
+        stroke: #16a34a;
+      }
+      .info-icon.blue {
+        background: #eff6ff;
+      }
+      .info-icon.blue svg {
+        stroke: #2563eb;
+      }
+      .info-icon.amber {
+        background: #fffbeb;
+      }
+      .info-icon.amber svg {
+        stroke: #d97706;
+      }
+      .info-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 1px;
+      }
+      .info-value {
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      /* Form card */
+      .form-card {
+        background: var(--g-mid);
+        border: 1px solid rgba(45, 106, 45, 0.12);
+        border-radius: 14px;
+        padding: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .form-card-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--cream);
+        margin-bottom: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .form-card-title svg {
+        width: 14px;
+        height: 14px;
+        stroke: var(--cream);
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 10px;
+      }
+      .form-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #fff;
+      }
+
+      /* Password input wrapper */
+      .pw-wrap {
+        position: relative;
+      }
+      .form-input {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 10px 40px 10px 12px;
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        color: var(--g-dark);
+        outline: none;
+        background: #fff;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .form-input:focus {
+        border-color: var(--g-mid);
+        box-shadow: 0 0 0 2px rgba(45, 106, 45, 0.1);
+      }
+      .toggle-pw {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 2px;
+        color: #9ca3af;
+        transition: color 0.2s;
+      }
+      .toggle-pw:hover {
+        color: var(--g-mid);
+      }
+      .toggle-pw svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* Password strength */
+      .pw-strength {
+        margin-top: 6px;
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      .pw-bar {
+        flex: 1;
+        height: 3px;
+        border-radius: 2px;
+        background: #e5e7eb;
+        transition: background 0.3s;
+      }
+      .pw-bar.weak {
+        background: #ef4444;
+      }
+      .pw-bar.medium {
+        background: #f59e0b;
+      }
+      .pw-bar.strong {
+        background: #10b981;
+      }
+      .pw-label {
+        font-size: 9px;
+        font-weight: 700;
+        min-width: 40px;
+        text-align: right;
+        color: #9ca3af;
+      }
+
+      /* Alert */
+      .alert {
+        display: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 11px;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 10px;
+        animation: alertIn 0.3s ease both;
+      }
+      @keyframes alertIn {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .alert.success {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #15803d;
+      }
+      .alert.error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+      }
+
+      /* Buttons */
+      .btn-simpan {
+        width: 100%;
+        background: rgba(245, 158, 11, 0.85);
+        color: #fff;
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        border: none;
+        border-radius: 8px;
+        padding: 11px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+        box-shadow: 0 2px 8px rgba(45, 106, 45, 0.25);
+      }
+      .btn-simpan:hover {
+        background: #d97706;
+      }
+      .btn-simpan:active {
+        transform: scale(0.99);
+      }
+      .btn-simpan:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      /* Admin reset section */
+      .admin-card {
+        background: var(--g-mid);
+        border: 1px solid rgba(168, 213, 162, 0.2);
+        border-radius: 14px;
+        padding: 1rem;
+      }
+      .admin-card-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .admin-card-title svg {
+        width: 14px;
+        height: 14px;
+        stroke: #a8d5a2;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .admin-input {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        color: #fff;
+        outline: none;
+        margin-bottom: 8px;
+      }
+      .admin-input::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+      }
+      .admin-input:focus {
+        border-color: rgba(168, 213, 162, 0.5);
+      }
+      .admin-select {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        color: #fff;
+        outline: none;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .admin-select option {
+        background: #1a3a1a;
+      }
+      .btn-reset-admin {
+        width: 100%;
+        background: rgba(245, 158, 11, 0.85);
+        color: #fff;
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        border: none;
+        border-radius: 8px;
+        padding: 10px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
+      .btn-reset-admin:hover {
+        background: #d97706;
+      }
+      .btn-reset-admin:active {
+        transform: scale(0.99);
+      }
+      .btn-reset-admin:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      /* Hasil reset */
+      .result-box {
+        display: none;
+        margin-top: 8px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px dashed rgba(253, 230, 138, 0.4);
+        border-radius: 8px;
+        padding: 10px 12px;
+        text-align: center;
+      }
+      .result-box-label {
+        font-size: 9px;
+        font-weight: 700;
+        color: rgba(168, 213, 162, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+      }
+      .result-box-pw {
+        font-size: 20px;
+        font-weight: 700;
+        color: #fde68a;
+        letter-spacing: 4px;
+        font-family: monospace;
+      }
+      .result-box-note {
+        font-size: 9px;
+        color: rgba(168, 213, 162, 0.6);
+        margin-top: 4px;
+      }
+
+      /* Bottom Nav */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-top: 1px solid rgba(76, 175, 80, 0.15);
+        display: flex;
+        z-index: 100;
+        padding-bottom: env(safe-area-inset-bottom);
+        box-shadow: 0 -4px 16px rgba(22, 49, 22, 0.2);
+        border-radius: 15px 15px 0 0;
+      }
+      .bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        padding: 0.65rem 0.5rem;
+        text-decoration: none;
+        color: #9ca3af;
+        font-size: 0.62rem;
+        font-weight: 600;
+        transition: color 0.15s;
+      }
+      .bottom-nav-item.active {
+        color: var(--g-mid);
+      }
+      .bottom-nav-item svg {
+        width: 22px;
+        height: 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <span class="topbar-title">Profil Saya</span>
+      <button class="btn-logout" onclick="handleLogout()">Keluar</button>
+    </div>
+
+    <!-- Avatar Header -->
+    <div class="profile-header">
+      <div class="avatar" id="avatar-initial">—</div>
+      <div class="profile-nama" id="profile-nama">—</div>
+      <div class="profile-username" id="profile-username">@—</div>
+      <span class="role-pill" id="profile-role">—</span>
+    </div>
+
+    <div class="page">
+      <!-- Info Akun -->
+      <div>
+        <p class="section-label">Informasi Akun</p>
+        <div class="info-card">
+          <div class="info-row">
+            <div class="info-icon green">
+              <svg viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <div>
+              <div class="info-label">Nama Lengkap</div>
+              <div class="info-value" id="info-nama">—</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-icon blue">
+              <svg viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </div>
+            <div>
+              <div class="info-label">Username</div>
+              <div class="info-value" id="info-username">—</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-icon amber">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <div>
+              <div class="info-label">Role / Status</div>
+              <div class="info-value" id="info-role">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ganti Password Sendiri -->
+      <div>
+        <p class="section-label">Keamanan</p>
+        <div class="form-card">
+          <div class="form-card-title">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Ganti Password
+          </div>
+          <div id="alert-pw" class="alert"></div>
+          <form id="form-ganti-pw" onsubmit="handleGantiPassword(event)">
+            <div class="form-group">
+              <label class="form-label">Password Baru</label>
+              <div class="pw-wrap">
+                <input
+                  type="password"
+                  id="new-pw"
+                  class="form-input"
+                  placeholder="Minimal 6 karakter"
+                  minlength="6"
+                  required
+                  oninput="checkStrength(this.value)"
+                />
+                <button
+                  type="button"
+                  class="toggle-pw"
+                  onclick="toggleVisibility('new-pw', this)"
+                >
+                  <svg id="eye-new" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </div>
+              <div class="pw-strength">
+                <div class="pw-bar" id="bar1"></div>
+                <div class="pw-bar" id="bar2"></div>
+                <div class="pw-bar" id="bar3"></div>
+                <span class="pw-label" id="pw-label"></span>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 14px">
+              <label class="form-label">Konfirmasi Password Baru</label>
+              <div class="pw-wrap">
+                <input
+                  type="password"
+                  id="confirm-pw"
+                  class="form-input"
+                  placeholder="Ulangi password baru"
+                  required
+                />
+                <button
+                  type="button"
+                  class="toggle-pw"
+                  onclick="toggleVisibility('confirm-pw', this)"
+                >
+                  <svg viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <button type="submit" id="btn-simpan" class="btn-simpan">
+              Simpan Password Baru
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Admin: Reset Password Warga -->
+      <div id="admin-section" style="display: none">
+        <p class="section-label">Admin — Reset Password Warga</p>
+        <div class="admin-card">
+          <div class="admin-card-title">
+            <svg viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            Reset Password Warga
+          </div>
+          <div id="alert-admin" class="alert"></div>
+          <select id="select-warga" class="admin-select">
+            <option value="">— Pilih Warga —</option>
+          </select>
+          <input
+            type="text"
+            id="admin-new-pw"
+            class="admin-input"
+            placeholder="Password baru untuk warga ini..."
+          />
+          <button
+            id="btn-reset-admin"
+            class="btn-reset-admin"
+            onclick="handleAdminReset()"
+          >
+            Reset Password Warga
+          </button>
+          <div class="result-box" id="result-box">
+            <div class="result-box-label">✅ Password Baru</div>
+            <div class="result-box-pw" id="result-pw-value">—</div>
+            <div class="result-box-note">
+              Sampaikan ke warga. Minta segera diganti setelah login.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Nav dengan 4 item -->
+    <nav class="bottom-nav">
+      <a href="beranda.html" class="bottom-nav-item">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span>Beranda</span>
+      </a>
+      <a href="kebun.html" class="bottom-nav-item">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 10a4 4 0 0 0-4-4H4v4a4 4 0 0 0 4 4h4z" />
+          <path d="M12 10a4 4 0 0 1 4-4h4v4a4 4 0 0 1-4 4h-4z" />
+          <path d="M12 10v10" />
+          <path d="M8 22h8" />
+        </svg>
+        <span>Kebun</span>
+      </a>
+      <a href="panen.html" class="bottom-nav-item">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 9h18l-1.5 9A3 3 0 0 1 16.5 21h-9a3 3 0 0 1-3-3L3 9Z" />
+          <path d="M9 9V6a3 3 0 0 1 6 0v3" />
+          <path d="M4 13h16" />
+        </svg>
+        <span>Panen</span>
+      </a>
+      <a href="profil.html" class="bottom-nav-item active">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        <span>Profil</span>
+      </a>
+    </nav>
+
+    <script>
+      const user = JSON.parse(localStorage.getItem("user_session"));
+
+      const SUPABASE_URL = "https://iyujfrhyggnpuzflznrk.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_s7lrRYSClBRfyqA8wYTkNA_OlOqbcsp";
+      const supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY,
+      );
+
+      // ── Isi data profil ──
+      document.getElementById("avatar-initial").textContent = user.nama
+        .charAt(0)
+        .toUpperCase();
+      document.getElementById("profile-nama").textContent = user.nama;
+      document.getElementById("profile-username").textContent =
+        "@" + user.username;
+      document.getElementById("profile-role").textContent = user.role;
+      document.getElementById("info-nama").textContent = user.nama;
+      document.getElementById("info-username").textContent = user.username;
+      document.getElementById("info-role").textContent = user.role;
+
+      // Tampilkan section admin jika Admin
+      if (user.role === "Admin") {
+        document.getElementById("admin-section").style.display = "block";
+        loadWargaOptions();
+      }
+
+      function handleLogout() {
+        localStorage.removeItem("user_session");
+        window.location.replace("auth.html");
+      }
+
+      // ── Hash SHA-256 ──
+      async function hashPassword(pw) {
+        const buf = await crypto.subtle.digest(
+          "SHA-256",
+          new TextEncoder().encode(pw),
+        );
+        return Array.from(new Uint8Array(buf))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      // ── Toggle show/hide password ──
+      function toggleVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const isHidden = input.type === "password";
+        input.type = isHidden ? "text" : "password";
+        btn.querySelector("svg").innerHTML = isHidden
+          ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+          : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+      }
+
+      // ── Password strength ──
+      function checkStrength(pw) {
+        const bars = ["bar1", "bar2", "bar3"].map((id) =>
+          document.getElementById(id),
+        );
+        const label = document.getElementById("pw-label");
+        bars.forEach((b) => (b.className = "pw-bar"));
+        if (!pw) {
+          label.textContent = "";
+          label.style.color = "#9ca3af";
+          return;
+        }
+        let score = 0;
+        if (pw.length >= 6) score++;
+        if (pw.length >= 10) score++;
+        if (/[A-Z]/.test(pw) || /[0-9]/.test(pw) || /[^a-zA-Z0-9]/.test(pw))
+          score++;
+        const cfg = [
+          null,
+          { cls: "weak", text: "Lemah", color: "#ef4444", bars: 1 },
+          { cls: "medium", text: "Sedang", color: "#f59e0b", bars: 2 },
+          { cls: "strong", text: "Kuat", color: "#10b981", bars: 3 },
+        ][score];
+        if (cfg) {
+          bars.slice(0, cfg.bars).forEach((b) => b.classList.add(cfg.cls));
+          label.textContent = cfg.text;
+          label.style.color = cfg.color;
+        }
+      }
+
+      function showAlert(elId, msg, type) {
+        const el = document.getElementById(elId);
+        el.textContent = msg;
+        el.className = "alert " + type;
+        el.style.display = "block";
+        el.style.animation = "none";
+        void el.offsetWidth;
+        el.style.animation = "";
+        if (type === "success")
+          setTimeout(() => (el.style.display = "none"), 4000);
+      }
+
+      // ── Ganti password sendiri ──
+      async function handleGantiPassword(e) {
+        e.preventDefault();
+        const newPw = document.getElementById("new-pw").value;
+        const confirmPw = document.getElementById("confirm-pw").value;
+        const btn = document.getElementById("btn-simpan");
+
+        if (newPw !== confirmPw) {
+          showAlert("alert-pw", "Konfirmasi password tidak cocok!", "error");
+          return;
+        }
+        if (newPw.length < 6) {
+          showAlert("alert-pw", "Password minimal 6 karakter!", "error");
+          return;
+        }
+
+        btn.textContent = "Menyimpan...";
+        btn.disabled = true;
+        try {
+          const hashed = await hashPassword(newPw);
+          const { error } = await supabaseClient
+            .from("users")
+            .update({ password: hashed })
+            .eq("id", user.id);
+          if (error) throw error;
+          showAlert(
+            "alert-pw",
+            "✅ Password berhasil diubah! Silakan login ulang.",
+            "success",
+          );
+          document.getElementById("form-ganti-pw").reset();
+          checkStrength("");
+          setTimeout(() => {
+            localStorage.removeItem("user_session");
+            window.location.replace("auth.html");
+          }, 2000);
+        } catch (e) {
+          showAlert("alert-pw", "Gagal: " + e.message, "error");
+          btn.textContent = "Simpan Password Baru";
+          btn.disabled = false;
+        }
+      }
+
+      // ── Admin: load daftar warga ──
+      async function loadWargaOptions() {
+        const { data, error } = await supabaseClient
+          .from("users")
+          .select("id, nama, username")
+          .order("nama");
+        const sel = document.getElementById("select-warga");
+        if (error || !data) return;
+        sel.innerHTML =
+          '<option value="">— Pilih Warga —</option>' +
+          data
+            .filter((w) => w.id !== user.id)
+            .map(
+              (w) =>
+                `<option value="${w.id}">${w.nama} (@${w.username})</option>`,
+            )
+            .join("");
+      }
+
+      // ── Admin: reset password warga ──
+      async function handleAdminReset() {
+        const wargaId = document.getElementById("select-warga").value;
+        const newPw = document.getElementById("admin-new-pw").value.trim();
+        if (!wargaId) {
+          showAlert("alert-admin", "Pilih warga terlebih dahulu!", "error");
+          return;
+        }
+        if (!newPw || newPw.length < 4) {
+          showAlert("alert-admin", "Password minimal 4 karakter!", "error");
+          return;
+        }
+
+        const btn = document.getElementById("btn-reset-admin");
+        btn.textContent = "Mereset...";
+        btn.disabled = true;
+        try {
+          const hashed = await hashPassword(newPw);
+          const { error } = await supabaseClient
+            .from("users")
+            .update({ password: hashed })
+            .eq("id", wargaId);
+          if (error) throw error;
+          document.getElementById("result-pw-value").textContent = newPw;
+          document.getElementById("result-box").style.display = "block";
+          document.getElementById("admin-new-pw").value = "";
+          document.getElementById("select-warga").value = "";
+          showAlert("alert-admin", "✅ Password berhasil direset!", "success");
+        } catch (e) {
+          showAlert("alert-admin", "Gagal reset: " + e.message, "error");
+        }
+        btn.textContent = "Reset Password Warga";
+        btn.disabled = false;
+      }
+    </script>
+  </body>
+</html>
