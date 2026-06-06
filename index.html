@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kebun GSG 07</title>
+  <style>
+    body { margin: 0; background: #1a3a1a; }
+  </style>
+  <script>
+    // Redirect secepat mungkin — jangan tunggu apapun
+    (function() {
+      try {
+        var s = localStorage.getItem('user_session');
+        window.location.replace(s ? 'pages/beranda.html' : 'pages/auth.html');
+      } catch(e) {
+        window.location.replace('pages/auth.html');
+      }
+    })();
+  </script>
+</head>
+<body></body>
+</html>
