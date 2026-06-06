@@ -582,10 +582,22 @@
         -webkit-focus-ring-color: transparent !important;
         outline: none !important;
       }
+
+      /* Gaya dasar ikon panah */
+      .panen-chevron {
+        display: inline-block;
+        transition: transform 0.3s ease-in-out; /* Membuat transisi rotasi sehalus sutra */
+        margin-left: 4px;
+        font-weight: bold;
+      }
+
+      /* Kelas pemicu saat semua data terbuka (panah berputar ke atas) */
+      .panen-chevron.putar-atas {
+        transform: rotate(-180deg);
+      }
     </style>
   </head>
   <body>
-    <!-- Navbar -->
     <nav class="navbar">
       <div>
         <div id="nav-nama" class="font-bold text-sm text-white">—</div>
@@ -598,7 +610,14 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button class="nav-btn btn-logout" onclick="handleLogout()">
+        <button
+          class="nav-btn btn-logout"
+          onclick="handleLogout()"
+          style="
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none;
+          "
+        >
           Keluar
         </button>
       </div>
@@ -633,7 +652,6 @@
         </div>
       </div>
 
-      <!-- Stats Bar -->
       <div class="stats-bar">
         <div class="stat-item">
           <div id="stat-jenis" class="stat-number">—</div>
@@ -649,7 +667,6 @@
         </div>
       </div>
 
-      <!-- Panen Section -->
       <div style="padding: 1.25rem; padding-top: 2rem">
         <div
           style="
@@ -660,15 +677,24 @@
           "
         >
           <h2 class="section-title">Tanaman Siap Panen</h2>
-          <a
-            href="panen.html"
+          <span
             id="btn-lihat-panen"
             class="section-link"
-            style="display: none"
-            >Lihat semua →</a
+            style="
+              display: none;
+              cursor: pointer;
+              -webkit-tap-highlight-color: transparent !important;
+              user-select: none;
+              display: flex;
+              align-items: center;
+              gap: 4px;
+            "
+            onclick="toggleLihatPanen()"
           >
+            <span id="text-lihat-panen">Lihat semua</span>
+            <span id="icon-lihat-panen" class="panen-chevron">↓</span>
+          </span>
         </div>
-        <!-- Skeleton saat loading -->
         <div
           id="skeleton-panen"
           style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem"
@@ -693,7 +719,6 @@
         ></div>
       </div>
 
-      <!-- Kebun Section -->
       <div
         style="
           padding: 0 1.25rem 1.25rem;
@@ -707,7 +732,11 @@
         </h2>
 
         <div class="dropdown-section" id="section-sayuran">
-          <button class="dropdown-trigger" onclick="toggleDropdown('sayuran')">
+          <button
+            class="dropdown-trigger"
+            onclick="toggleDropdown('sayuran')"
+            style="-webkit-tap-highlight-color: transparent !important"
+          >
             <div class="dropdown-left">
               <span class="kategori-pill">
                 <svg
@@ -752,7 +781,11 @@
         </div>
 
         <div class="dropdown-section" id="section-buah">
-          <button class="dropdown-trigger" onclick="toggleDropdown('buah')">
+          <button
+            class="dropdown-trigger"
+            onclick="toggleDropdown('buah')"
+            style="-webkit-tap-highlight-color: transparent !important"
+          >
             <div class="dropdown-left">
               <span class="kategori-pill">
                 <svg
@@ -797,7 +830,11 @@
         </div>
 
         <div class="dropdown-section" id="section-umbi">
-          <button class="dropdown-trigger" onclick="toggleDropdown('umbi')">
+          <button
+            class="dropdown-trigger"
+            onclick="toggleDropdown('umbi')"
+            style="-webkit-tap-highlight-color: transparent !important"
+          >
             <div class="dropdown-left">
               <span class="kategori-pill">
                 <svg
@@ -847,7 +884,14 @@
     </main>
 
     <nav class="bottom-nav">
-      <a href="beranda.html" class="bottom-nav-item active">
+      <a
+        href="beranda.html"
+        class="bottom-nav-item active"
+        style="
+          -webkit-tap-highlight-color: transparent !important;
+          outline: none;
+        "
+      >
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -861,7 +905,14 @@
         </svg>
         <span>Beranda</span>
       </a>
-      <a href="kebun.html" class="bottom-nav-item">
+      <a
+        href="kebun.html"
+        class="bottom-nav-item"
+        style="
+          -webkit-tap-highlight-color: transparent !important;
+          outline: none;
+        "
+      >
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -877,7 +928,14 @@
         </svg>
         <span>Kebun</span>
       </a>
-      <a href="panen.html" class="bottom-nav-item">
+      <a
+        href="panen.html"
+        class="bottom-nav-item"
+        style="
+          -webkit-tap-highlight-color: transparent !important;
+          outline: none;
+        "
+      >
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -892,7 +950,14 @@
         </svg>
         <span>Panen</span>
       </a>
-      <a href="profil.html" class="bottom-nav-item">
+      <a
+        href="profil.html"
+        class="bottom-nav-item"
+        style="
+          -webkit-tap-highlight-color: transparent !important;
+          outline: none;
+        "
+      >
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -921,6 +986,10 @@
         SUPABASE_URL,
         SUPABASE_KEY,
       );
+
+      // Variabel global manajemen tampilan panen
+      let dataPanenGlobal = [];
+      let statusSemuaPanenTampil = false;
 
       function handleLogout() {
         localStorage.removeItem("user_session");
@@ -951,7 +1020,6 @@
           container.innerHTML = `<p style="font-size:0.7rem; color:rgba(168,213,162,0.4); font-style:italic; text-align:center; padding:1rem 0;">Belum ada tanaman di kategori ini.</p>`;
           return;
         }
-        // Build HTML string sekali — lebih efisien dari DOM manipulation per item
         container.innerHTML = data
           .map((v) => {
             const isBibit = v.status !== "Pertumbuhan";
@@ -973,10 +1041,51 @@
           .join("");
       }
 
-      // ── OPTIMASI UTAMA: hanya 2 query ke Supabase, semua hitungan di JS ──
+      // Helper Render HTML Kotak Panen
+      function renderPanenHTML(arrayData) {
+        const contPanen = document.getElementById("container-panen");
+        contPanen.innerHTML = arrayData
+          .map((hp) => {
+            const ini = (hp.nama_tanaman || "?").charAt(0).toUpperCase();
+            return `
+            <a href="panen.html" class="harvest-box-card">
+              <div>
+                <div class="harvest-initial">${ini}</div>
+                <div class="harvest-nama">${hp.nama_tanaman}</div>
+              </div>
+              <div style="margin-top:0.5rem; display:flex; align-items:center; justify-content:space-between; border-top:1px solid rgba(168,213,162,0.30); padding-top:6px;">
+                <span class="harvest-date">${formatTgl(hp.tanggal_panen)}</span>
+                <span class="harvest-badge">Panen</span>
+              </div>
+            </a>`;
+          })
+          .join("");
+      }
+
+      // Fungsi Kontrol Sembunyikan & Lihat Semua (Diperbarui)
+      // Fungsi Kontrol Sembunyikan & Lihat Semua (Dengan Animasi Smooth)
+      function toggleLihatPanen() {
+        const textBtn = document.getElementById("text-lihat-panen");
+        const iconBtn = document.getElementById("icon-lihat-panen");
+        
+        if (!statusSemuaPanenTampil) {
+          renderPanenHTML(dataPanenGlobal);
+          textBtn.textContent = "Sembunyikan";
+          iconBtn.classList.add("putar-atas");
+          
+          statusSemuaPanenTampil = true;
+        } else {
+          renderPanenHTML(dataPanenGlobal.slice(0, 4));
+          textBtn.textContent = "Lihat semua";
+          iconBtn.classList.remove("putar-atas");
+          
+          statusSemuaPanenTampil = false;
+        }
+      }
+
+      // Fungsi Load Data (Diperbarui)
       async function loadDashboardData() {
         try {
-          // Query 1 & 2 berjalan PARALEL (Promise.all) — bukan berurutan
           const [
             { data: allKebun, error: errKebun },
             { data: allPanen, error: errPanen },
@@ -989,8 +1098,7 @@
             supabaseClient
               .from("panen")
               .select("*")
-              .order("id", { ascending: false })
-              .limit(5),
+              .order("id", { ascending: false }),
             supabaseClient
               .from("users")
               .select("*", { count: "exact", head: true }),
@@ -999,7 +1107,8 @@
           if (errKebun) throw errKebun;
           if (errWarga) throw errWarga;
 
-          // Hitung statistik di JS — tanpa query tambahan ke DB
+          dataPanenGlobal = allPanen || [];
+
           const unikJenis = new Set((allKebun || []).map((t) => t.nama_tanaman))
             .size;
           const siapPanen = (allKebun || []).filter(
@@ -1016,26 +1125,18 @@
           skelPanen.style.display = "none";
           contPanen.style.display = "grid";
 
-          if (!errPanen && allPanen && allPanen.length > 0) {
-            if (allPanen.length >= 5)
+          if (!errPanen && dataPanenGlobal.length > 0) {
+            // KUNCI PERUBAHAN: Jika data berjumlah 5 atau lebih, tombol otomatis muncul
+            if (dataPanenGlobal.length >= 5) {
               document.getElementById("btn-lihat-panen").style.display =
                 "inline";
-            contPanen.innerHTML = allPanen
-              .map((hp) => {
-                const ini = (hp.nama_tanaman || "?").charAt(0).toUpperCase();
-                return `
-            <a href="panen.html" class="harvest-box-card">
-              <div>
-                <div class="harvest-initial">${ini}</div>
-                <div class="harvest-nama">${hp.nama_tanaman}</div>
-              </div>
-              <div style="margin-top:0.5rem; display:flex; align-items:center; justify-content:space-between; border-top:1px solid rgba(168,213,162,0.30); padding-top:6px;">
-                <span class="harvest-date">${formatTgl(hp.tanggal_panen)}</span>
-                <span class="harvest-badge">Panen</span>
-              </div>
-            </a>`;
-              })
-              .join("");
+              // Tampilan awal hanya memotong dan menampilkan 4 tumbuhan pertama
+              renderPanenHTML(dataPanenGlobal.slice(0, 4));
+            } else {
+              // Jika data kurang dari 5 (misal hanya ada 1, 2, 3, atau 4 tumbuhan), tampilkan semua tanpa tombol
+              document.getElementById("btn-lihat-panen").style.display = "none";
+              renderPanenHTML(dataPanenGlobal);
+            }
           } else {
             contPanen.innerHTML = `<p style="grid-column:span 2; font-size:0.72rem; color:rgba(45,106,45,0.5); font-style:italic; text-align:center; padding:1.5rem 0;">Belum ada komoditas siap panen.</p>`;
           }
@@ -1066,12 +1167,10 @@
         }
       }
 
-      // ── DOMContentLoaded: jauh lebih cepat dari window.onload ──
-      // Tidak perlu tunggu gambar 2.8MB selesai download dulu
+      // ── DOMContentLoaded ──
       document.addEventListener("DOMContentLoaded", loadDashboardData);
 
-      // Konfigurasi durasi (5 menit dalam milidetik)
-      // Konfigurasi durasi (5 menit tidak aktif)
+      // Konfigurasi durasi (3 menit tidak aktif)
       const TIMEOUT_DURATION = 3 * 60 * 1000;
       let logoutTimer;
 
@@ -1081,11 +1180,7 @@
       }
 
       function performLogout() {
-        // 1. Hapus session dari localStorage
         localStorage.removeItem("user_session");
-
-        // 2. Berikan penanda di URL bahwa user keluar karena timeout
-        // Ini agar di halaman auth kita bisa memunculkan pesan box merah yang rapi daripada alert pop-up
         window.location.replace("auth.html?reason=timeout");
       }
 
